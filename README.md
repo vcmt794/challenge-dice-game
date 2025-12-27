@@ -1,215 +1,238 @@
-# 🏗 Scaffold-ETH 2
+# Dice Game – Rigged Randomness Challenge
 
-<h4 align="center">
-  <a href="https://docs.scaffoldeth.io">Documentation</a> |
-  <a href="https://scaffoldeth.io">Website</a>
-</h4>
+Challenge này minh họa việc **randomness trên blockchain là xác định (deterministic)** và có thể bị khai thác nếu dùng sai cách (ví dụ: `blockhash`).
 
-🧪 An open-source, up-to-date toolkit for building decentralized applications (dapps) on the Ethereum blockchain. It's designed to make it easier for developers to create and deploy smart contracts and build user interfaces that interact with those contracts.
-
-⚙️ Built using NextJS, RainbowKit, Hardhat, Wagmi, Viem, and Typescript.
-
-- ✅ **Contract Hot Reload**: Your frontend auto-adapts to your smart contract as you edit it.
-- 🪝 **[Custom hooks](https://docs.scaffoldeth.io/hooks/)**: Collection of React hooks wrapper around [wagmi](https://wagmi.sh/) to simplify interactions with smart contracts with typescript autocompletion.
-- 🧱 [**Components**](https://docs.scaffoldeth.io/components/): Collection of common web3 components to quickly build your frontend.
-- 🔥 **Burner Wallet & Local Faucet**: Quickly test your application with a burner wallet and local faucet.
-- 🔐 **Integration with Wallet Providers**: Connect to different wallet providers and interact with the Ethereum network.
-
-![Debug Contracts tab](https://github.com/scaffold-eth/scaffold-eth-2/assets/55535804/b237af0c-5027-4849-a5c1-2e31495cccb1)
-
-## Requirements
-
-Before you begin, you need to install the following tools:
-
-- [Node (>= v20.18.3)](https://nodejs.org/en/download/)
-- Yarn ([v1](https://classic.yarnpkg.com/en/docs/install/) or [v2+](https://yarnpkg.com/getting-started/install))
-- [Git](https://git-scm.com/downloads)
-
-# 🚩 Challenge: 🎲 Dice Game
-
-![readme-3](https://raw.githubusercontent.com/scaffold-eth/se-2-challenges/challenge-dice-game/extension/packages/nextjs/public/hero.png)
-
-> 🎰 Randomness is tricky on a public deterministic blockchain. The block hash is an easy to use, but very weak form of randomness. This challenge will give you an example of a contract using block hash to create random numbers. This randomness is exploitable. Other, stronger forms of randomness include commit/reveal schemes, oracles, or VRF from Chainlink.
-
-> 👍 One day soon, randomness will be built into the Ethereum protocol!
-
-> 💬 Dice Game is a contract that allows users to roll the dice to try and win the prize. If players roll either a 0, 1, 2, 3, 4 or 5 they will win the current prize amount. The initial prize is 10% of the contract's balance, which starts out at .05 Eth.
-
-> 🧤 Every time a player rolls the dice, they are required to send .002 Eth. 40 percent of this value is added to the current prize amount while the other 60 percent stays in the contract to fund future prizes. Once a prize is won, the new prize amount is set to 10% of the total balance of the DiceGame contract.
-
-> 🧨 Your job is to attack the Dice Game contract! You will create a new contract that will predict the randomness ahead of time and only roll the dice when you're guaranteed to be a winner!
-
-> 💬 Meet other builders working on this challenge and get help in the [Challenge telegram](https://t.me/+3StA0aBSArFjNjUx)!
+Mục tiêu của bạn là **tạo một contract tấn công**, dự đoán trước kết quả roll dice và **chỉ chơi khi chắc chắn thắng**.
 
 ---
 
-## Checkpoint 0: 📦 Environment 📚
+## Yêu cầu môi trường
 
-> Start your local network (a blockchain emulator in your computer):
+Cài sẵn các công cụ sau:
 
-```sh
+* Node.js **>= 20.18.3**
+* Yarn (v1 hoặc v2+)
+* Git
+
+---
+
+## Khởi tạo project
+
+```bash
+npx create-eth@1.0.2 -e challenge-dice-game challenge-dice-game
+cd challenge-dice-game
+yarn install
+```
+
+---
+
+## Checkpoint 0 – Environment
+
+### Terminal 1 – chạy local blockchain
+
+```bash
 yarn chain
 ```
 
-> in a second terminal window, 🛰 deploy your contract (locally):
+### Terminal 2 – deploy contracts
 
-```sh
+```bash
 yarn deploy
 ```
 
-> in a third terminal window, start your 📱 frontend:
+### Terminal 3 – chạy frontend
 
-```sh
+```bash
 yarn start
 ```
 
-📱 Open http://localhost:3000 to see the app.
+Mở trình duyệt:
 
-> 👩‍💻 Rerun `yarn deploy --reset` whenever you want to deploy new contracts to the frontend, update your current contracts with changes, or re-deploy it to get a fresh contract address.
-
----
-
-⚠️ We have disabled AI in Cursor and VSCode and highly suggest that you do not enable it so you can focus on the challenge, do everything by yourself, and hence better understand and remember things. If you are using another IDE, please disable AI yourself.
-
-🔧 If you are a vibe-coder and don't care about understanding the syntax of the code used and just want to understand the general takeaways, you can re-enable AI by:
-- Cursor: remove `*` from `.cursorignore` file
-- VSCode: set `chat.disableAIFeatures` to `false` in `.vscode/settings.json` file
+```
+http://localhost:3000
+```
 
 ---
 
-## Checkpoint 1: 🎲 Dice Game
+## Checkpoint 1 – Dice Game
 
-🔍 Inspect the code in the `DiceGame.sol` contract in `packages / hardhat / contracts`
+### Mục tiêu
 
-🔒 You will not be changing any code in the `DiceGame.sol` contract in this challenge. You will write your own contract to predict the outcome, then only roll the dice when it is favourable.
+* Hiểu cách `DiceGame.sol` tạo số ngẫu nhiên
+* Xác định liệu có thể **dự đoán trước kết quả roll** hay không
 
-💸 Grab some funds from the faucet and roll the dice a few times. Watch the balance of the DiceGame contract in the Debug tab. It increases on a failed roll and decreases by the prize amount on a successful roll.
+### Việc cần làm
 
-![Faucet](https://github.com/scaffold-eth/se-2-challenges/assets/55535804/e82e3100-20fb-4886-a6bf-4113c3729f53)
+1. Mở file:
 
-### 🥅 Goals
+```
+packages/hardhat/contracts/DiceGame.sol
+```
 
-- [ ] Track the solidity code to find out how the DiceGame contract is generating random numbers.
-- [ ] Is it possible to predict the random number for any given roll?
+2. Phân tích đoạn code tạo roll:
 
----
+```solidity
+bytes32 prevHash = blockhash(block.number - 1);
+bytes32 hash = keccak256(abi.encodePacked(prevHash, address(this), nonce));
+uint256 roll = uint256(hash) % 16;
+```
 
-## Checkpoint 2: 🔑 Rigged Contract
+### Kết luận
 
-Start by creating a `receive()` function in the `RiggedRoll.sol` contract to allow it to receive Eth. This will allow us to fund the RiggedRoll contract from the faucet which is required for our contract to call the `rollTheDice()` function.
+* `blockhash(block.number - 1)` → **đã biết khi tx chạy**
+* `address(this)` → cố định
+* `nonce` → public
 
-Next add a `riggedRoll()` function. This function should predict the randomness of a roll, and if the outcome will be a winner, call `rollTheDice()` on the DiceGame contract.
-
-🃏 Predict the outcome by generating your random numbers in the exact same way as the DiceGame contract.
-
-> 📣 Reminder! Calling `rollTheDice()` will fail unless you send a message value of at least .002 Eth! [Here is one example of how to send value with a function call.](https://ethereum.stackexchange.com/questions/6665/call-contract-and-send-value-from-solidity)
-
-🚀 To deploy your RiggedRoll contract, uncomment the appropriate lines in the `01_deploy_riggedRoll.ts` file in `packages / hardhat / deploy`
-
-💸 You will need to send some funds to your RiggedRoll contract before doing your first roll, you can use the Faucet button at the bottom left of the page.
-
-❓ If you're struggling to get the exact same random number as the DiceGame contract, try adding some `console.log()` statements in both contracts to help you track the values. These messages will appear in the Hardhat node terminal.
-
-### ⚔️ Side Quest
-
-- [ ] Add a statement to require `address(this).balance >= .002 ether` in your riggedRoll function. This will help prevent calling the `rollTheDice()` function without enough value.
-- [ ] Uncomment the code in `packages / nextjs / app / dice / page.tsx` to show a riggedRoll button and contract balance on the main UI tab. Now you can test your function without switching tabs.
-- [ ] Does your riggedRoll function only call `rollTheDice()` when it's going to be a winning roll? What happens when it does call `rollTheDice()`?
-
-![RiggedLosingRoll](https://github.com/scaffold-eth/se-2-challenges/assets/55535804/b6c8d7b4-139b-4f54-a62c-a0c77b3692a3)
+**Có thể dự đoán chính xác roll**
 
 ---
 
-## Checkpoint 3: 💵 Where's my money?!?
+## Checkpoint 2 – Rigged Contract
 
-You have beaten the game, but where is your money? Since the RiggedRoll contract is the one calling `rollTheDice()`, that is where the prize money is being sent.
+### Mục tiêu
 
-![RiggedRollAddress](https://github.com/scaffold-eth/se-2-challenges/assets/55535804/e9b9d164-2fb1-416a-9c5e-198d15bca0c6)
+* Viết contract `RiggedRoll.sol`
+* Chỉ gọi `rollTheDice()` khi **roll ≤ 5**
 
-📥 Create a `withdraw(address _addr, uint256 _amount)` function to allow you to send Eth from RiggedRoll to another address.
+### Việc cần làm
 
-### 🥅 Goals
+#### 1️⃣ Thêm `receive()` để nhận ETH
 
-- [ ] Can you send value from the RiggedRoll contract to your front end address?
-- [ ] Is anyone able to call the withdraw function? What would be the downside to that?
+```solidity
+receive() external payable {}
+```
 
-### ⚔️ Side Quest
+#### Viết `riggedRoll()`
 
-- [ ] Lock the withdraw function so it can only be called by the owner.
+* Đọc `nonce` từ DiceGame
+* Tạo hash giống hệt DiceGame
+* Nếu roll thắng → gọi `rollTheDice{value: 0.002 ether}()`
 
-![WithdrawOnlyOwner](https://github.com/scaffold-eth/se-2-challenges/assets/55535804/e8397b1e-a077-4009-b518-30a6d8deb6e7)
+#### Deploy RiggedRoll
 
-> ⚠️ But wait, I am not the owner! You will want to set your front end address as the owner in `01_deploy_riggedRoll.ts`. This will allow your front end address to call the withdraw function.
+Mở file:
 
-## Checkpoint 4: 💾 Deploy your contracts! 🛰
+```
+packages/hardhat/deploy/01_deploy_riggedRoll.ts
+```
 
-📡 Edit the `defaultNetwork` to [your choice of public EVM networks](https://ethereum.org/en/developers/docs/networks/) in `packages / hardhat / hardhat.config.ts`
+Uncomment phần deploy RiggedRoll, sau đó chạy:
 
-🔐 You will need to generate a **deployer address** using `yarn generate` This creates a mnemonic and saves it locally.
+```bash
+yarn deploy --reset
+```
 
-👩‍🚀 Use `yarn account` to view your deployer account balances.
+#### Fund RiggedRoll
 
-⛽️ You will need to send ETH to your **deployer address** with your wallet, or get it from a public faucet of your chosen network.
-
-🚀 Run `yarn deploy` to deploy your smart contract to a public network (selected in `hardhat.config.ts`)
-
-> 💬 Hint: You can set the `defaultNetwork` in `hardhat.config.ts` to `sepolia` or `optimismSepolia` **OR** you can `yarn deploy--network sepolia` or `yarn deploy--network optimismSepolia`.
-
----
-
-## Checkpoint 5: 🚢 Ship your frontend! 🚁
-
-✏️ Edit your frontend config in `packages / nextjs / scaffold.config.ts` to change the `targetNetwork` to `chains.sepolia` (or `chains.optimismSepolia` if you deployed to OP Sepolia)
-
-💻 View your frontend at http://localhost:3000 and verify you see the correct network.
-
-📡 When you are ready to ship the frontend app...
-
-📦 Run `yarn vercel` to package up your frontend and deploy.
-
-> You might need to log in to Vercel first by running `yarn vercel:login`. Once you log in (email, GitHub, etc), the default options should work.
-
-> If you want to redeploy to the same production URL you can run `yarn vercel --prod`. If you omit the `--prod` flag it will deploy it to a preview/test URL.
-
-> Follow the steps to deploy to Vercel. It'll give you a public URL.
-
-> 🦊 Since we have deployed to a public testnet, you will now need to connect using a wallet you own or use a burner wallet. By default 🔥 `burner wallets` are only available on `hardhat` . You can enable them on every chain by setting `onlyLocalBurnerWallet: false` in your frontend config (`scaffold.config.ts` in `packages / nextjs / `)
-
-#### Configuration of Third-Party Services for Production-Grade Apps.
-
-By default, 🏗 Scaffold-ETH 2 provides predefined API keys for popular services such as Alchemy and Etherscan. This allows you to begin developing and testing your applications more easily, avoiding the need to register for these services.
-This is great to complete your **SpeedRunEthereum**.
-
-For production-grade applications, it's recommended to obtain your own API keys (to prevent rate limiting issues). You can configure these at:
-
-- 🔷`ALCHEMY_API_KEY` variable in `packages / hardhat /.env` and `packages / nextjs /.env.local`. You can create API keys from the [Alchemy dashboard](https://dashboard.alchemy.com/).
-
-- 📃`ETHERSCAN_API_KEY` variable in `packages / hardhat /.env` with your generated API key. You can get your key [here](https://etherscan.io/myapikey).
-
-> 💬 Hint: It's recommended to store env's for nextjs in Vercel/system env config for live apps and use .env.local for local testing.
+* Dùng **Faucet** trên UI
+* Gửi ETH vào **địa chỉ RiggedRoll**
 
 ---
 
-## Checkpoint 6: 📜 Contract Verification
+## Checkpoint 3 – Where’s my money?
 
-Run the `yarn verify--network your_network` command to verify your contracts on etherscan 🛰
+### Vấn đề
 
-👉 Search this address on [Sepolia Etherscan](https://sepolia.etherscan.io/) (or [Optimism Sepolia Etherscan](https://sepolia-optimism.etherscan.io/) if you deployed to OP Sepolia) to get the URL you submit to 🏃‍♀️[SpeedRunEthereum.com](https://speedrunethereum.com).
+* Prize được gửi về **RiggedRoll contract**
+* Không phải ví frontend
+
+### Giải pháp
+
+Viết hàm `withdraw`
+
+```solidity
+function withdraw(address payable _to, uint256 _amount) external onlyOwner {
+    (bool sent, ) = _to.call{value: _amount}("");
+    require(sent, "Withdraw failed");
+}
+```
+
+### Side Quest
+
+* Dùng `Ownable`
+* Chỉ owner mới được rút tiền
+
+### Lưu ý
+
+Trong file deploy:
+
+```
+01_deploy_riggedRoll.ts
+```
+
+→ set **frontend address** làm owner
 
 ---
 
-> 🏃 Head to your next challenge [here](https://speedrunethereum.com).
+## Checkpoint 4 – Deploy lên Sepolia
 
-> 💬 Problems, questions, comments on the stack? Post them to the [🏗 scaffold-eth developers chat](https://t.me/joinchat/F7nCRK3kI93PoCOk)
+### 1️⃣ Tạo deployer wallet
 
-## Documentation
+```bash
+yarn generate
+yarn account
+```
 
-Visit our [docs](https://docs.scaffoldeth.io) to learn how to start building with Scaffold-ETH 2.
+### 2️⃣ Lấy Sepolia ETH
 
-To know more about its features, check out our [website](https://scaffoldeth.io).
+Khuyên dùng faucet **không cần Mainnet ETH**:
 
-## Contributing to Scaffold-ETH 2
+```
+https://sepolia-faucet.pk910.de
+```
 
-We welcome contributions to Scaffold-ETH 2!
+### 3️⃣ Deploy lên Sepolia
 
-Please see [CONTRIBUTING.MD](https://github.com/scaffold-eth/scaffold-eth-2/blob/main/CONTRIBUTING.md) for more information and guidelines for contributing to Scaffold-ETH 2.
+```bash
+yarn deploy --network sepolia
+```
+
+---
+
+## Checkpoint 5 – Deploy Frontend
+
+### 1️⃣ Cấu hình network
+
+File:
+
+```
+packages/nextjs/scaffold.config.ts
+```
+
+```ts
+targetNetwork: chains.sepolia,
+```
+
+### 2️⃣ Deploy frontend
+
+```bash
+yarn vercel
+```
+
+Hoặc production:
+
+```bash
+yarn vercel --prod
+```
+Có được url:
+```
+https://nextjs-15g8e3rzb-lab01s-projects.vercel.app
+```
+
+---
+
+## 📜 Checkpoint 6 – Verify Contract
+
+```bash
+yarn verify --network sepolia
+```
+
+* Copy link Etherscan
+  ```
+  https://sepolia.etherscan.io/address/0xA2076d856eDf7C9F8Ca310Cf72F270c1665dcf5F
+  ```
+* Submit lên **SpeedRunEthereum**
+
+---
+
+## Hoàn thành
